@@ -1,0 +1,5 @@
+Server:
+A dedicated server for filesync
+
+Client:
+Client for filesync. Will add the possibility to sync from client to client.

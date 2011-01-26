@@ -7,9 +7,9 @@ CFLAGS =
 $(BIN): $(OBJS)
 	$(CC) -o $(BIN) $(OBJS)
 
-client.o: client.cpp
+client.o: client.cc
 
-ini.o: ini.cpp ini.h
+ini.o: ini.cc ini.h
 
 clean:
 	rm $(BIN) $(OBJS)

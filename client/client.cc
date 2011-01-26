@@ -9,6 +9,6 @@ int main ()
 	char * pathToIni = "./config.ini";
 	string syncpath;
 	Ini::Ini * inifile = new Ini::Ini(pathToIni);
-	syncpath = inifile->getSyncPath();
+	syncpath = inifile->getProperty("syncpath");
 	cout << syncpath << "\n";
 }

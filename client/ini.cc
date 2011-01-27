@@ -44,7 +44,7 @@ string Ini::getProperty(char * property) {
 		return "";
 	}
 
-	while(!stream.eof()) {
+	while (!stream.eof()) {
 		getline(stream, buffer);
 		if (buffer.substr(0, prop.length()) == prop) {
 			// We found what we wanted, no need to keep the stream open longer

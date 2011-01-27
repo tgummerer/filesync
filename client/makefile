@@ -1,4 +1,4 @@
-# Reading ini files
+# Makefile
 #   Copyright (C) 2011 Thomas Gummerer
 #
 # This file is part of Filesync.
@@ -28,6 +28,8 @@ $(BIN): $(OBJS)
 client.o: client.cc
 
 ini.o: ini.cc ini.h
+
+connection.o: connection.cc connection.h
 
 clean:
 	rm $(BIN) $(OBJS)

@@ -23,7 +23,7 @@ import configparser;
 config = configparser.ConfigParser()
 
 # Get the input
-syncdir = input("Please enter the path to the directory that should be syncronized: ")
+syncdir = input("Please enter the path to the directory that should be syncronized.\nPlease enter the full path: ")
 
 config['config'] = {}
 config['config']['syncpath'] = syncdir

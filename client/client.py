@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Create a configuration file
+# The client
 #   Copyright (C) 2011 Thomas Gummerer
 #
 # This file is part of Filesync.
@@ -18,15 +18,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Filesync.  If not, see <http://www.gnu.org/licenses/>. 
 
-# configparser used to write the config file
-import configparser
-config = configparser.ConfigParser()
+def getSyncPath(configFile):
+	try:
+		import configparser
+		config = configparser.ConfigParser()
 
-# Get the input
-syncdir = input("Please enter the path to the directory that should be syncronized.\nPlease enter the full path: ")
+		config.read(configFile)
 
-config['config'] = {}
-config['config']['syncpath'] = syncdir
-with open('../config.ini', 'w') as configfile:
-	config.write(configfile)
+		return config['config']['syncpath']
+
+	except KeyError:
+		print ('Configuration file does not exist. Please create it using helpers/makeconfig.py');
+		return '';
+
+print (getSyncPath('config.ini'))
 

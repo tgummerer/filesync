@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Filesync.  If not, see <http://www.gnu.org/licenses/>. 
 
+# TODO Move methods below to another class or at least file
 def getSyncPath(configFile):
 	try:
 		import configparser
@@ -28,8 +29,34 @@ def getSyncPath(configFile):
 		return config['config']['syncpath']
 
 	except KeyError:
-		print ('Configuration file does not exist. Please create it using helpers/makeconfig.py');
-		return '';
+		print ('Configuration file does not exist, or is corrupted. Please create it using helpers/makeconfig.py');
+		return ''
 
-print (getSyncPath('config.ini'))
+def getHost(configFile):
+	try:
+		import configparser
+		config = configparser.ConfigParser()
+
+		config.read(configFile)
+
+		return config['config']['serveraddress']
+
+	except KeyError:
+		print ('Configuration file does not exist, or is corrupted. Please create it using helpers/makeconfig.py');
+		return ''
+
+###############################################################################
+
+# Path to configuration file
+configFile = 'config.ini'
+
+# Method to get the syncronization path
+# getSyncPath(configFile)
+import connection
+
+con = connection.Connection(getHost(configFile))
+
+con.send('ts')
+print (con.recieve())
+con.close()
 

@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-# Create a configuration file
+# Class for easy connection handling
 #   Copyright (C) 2011 Thomas Gummerer
 #
 # This file is part of Filesync.
@@ -18,17 +16,24 @@
 # You should have received a copy of the GNU General Public License
 # along with Filesync.  If not, see <http://www.gnu.org/licenses/>. 
 
-# configparser used to write the config file
-import configparser
-config = configparser.ConfigParser()
+import socket
 
-# Get the input
-syncdir = input("Please enter the path to the directory that should be syncronized.\nPlease enter the full path: ")
-serveraddress = input("Please enter the server, to which filesync should connect: ")
+class Connection:
 
-config['config'] = {}
-config['config']['syncpath'] = syncdir
-config['config']['serveraddress'] = serveraddress
-with open('../config.ini', 'w') as configfile:
-	config.write(configfile)
+	def __init__(self, host, port = 13131):
+		self.host = host
+		self.port = port
 
+		self.host = socket.gethostname()
+		self.s = socket.socket()
+
+		self.s.connect((self.host, port))
+
+	def recieve(self):
+		return self.s.recv(4096)
+
+	def send(self, string):
+		self.s.send(string)
+
+	def close(self):
+		self.s.close();

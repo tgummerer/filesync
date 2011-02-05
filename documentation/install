@@ -1,0 +1,6 @@
+SERVER:
+For installing the server you past have py-postgresql installed. Download it at http://python.projects.postgresql.org/
+The configuration file for the server has to be created using helpers/makeconfig.py in the server package
+
+CLIENT:
+The configuration file has to be created using helpers/makeconfig.py in the client package

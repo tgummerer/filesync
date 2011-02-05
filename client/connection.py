@@ -24,10 +24,9 @@ class Connection:
 		self.host = host
 		self.port = port
 
-		self.host = socket.gethostname()
 		self.s = socket.socket()
 
-		self.s.connect((self.host, port))
+		self.s.connect((socket.gethostbyname(host), port))
 
 	def recieve(self):
 		return self.s.recv(4096)

@@ -21,15 +21,18 @@
 import socket
 
 s = socket.socket()
-host = socket.gethostname()
+host = '' # Means all available interfaces
 port = 13131
 s.bind((host, port))
 
-s.listen(5)
+s.listen(1)
+con, addr = s.accept()
+print ('Connected to:', addr)
 while True:
-   con, addr = s.accept()
-   print ('Got connection from', addr)
    echo = con.recv(4096)
+   if (echo.decode("ascii") == "exit"):
+	   break
    con.send(echo)
-   con.close()
+
+con.close()
 

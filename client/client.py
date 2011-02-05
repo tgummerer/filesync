@@ -54,9 +54,14 @@ configFile = 'config.ini'
 # getSyncPath(configFile)
 import connection
 
-con = connection.Connection(getHost(configFile))
 
-con.send('ts')
-print (con.recieve())
+con = connection.Connection(getHost(configFile))
+while True:
+	inp = input("Input something: ")
+	if (inp == "exit"):
+		break
+
+	con.send(bytes(inp, "ascii"))
+	print(con.recieve().decode("ascii"))
 con.close()
 

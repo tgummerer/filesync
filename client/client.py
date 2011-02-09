@@ -19,27 +19,15 @@
 # along with Filesync.  If not, see <http://www.gnu.org/licenses/>. 
 
 # TODO Move methods below to another class or at least file
-def getSyncPath(configFile):
+# TODO Replace with getProperty
+def getProperty(configFile, section, prop):
 	try:
 		import configparser
 		config = configparser.ConfigParser()
 
 		config.read(configFile)
 
-		return config['config']['syncpath']
-
-	except KeyError:
-		print ('Configuration file does not exist, or is corrupted. Please create it using helpers/makeconfig.py');
-		return ''
-
-def getHost(configFile):
-	try:
-		import configparser
-		config = configparser.ConfigParser()
-
-		config.read(configFile)
-
-		return config['config']['serveraddress']
+		return config[section][prop]
 
 	except KeyError:
 		print ('Configuration file does not exist, or is corrupted. Please create it using helpers/makeconfig.py');
@@ -55,7 +43,7 @@ configFile = 'config.ini'
 import connection
 
 
-con = connection.Connection(getHost(configFile))
+con = connection.Connection(getProperty(configFile, 'config', 'serveraddress'))
 while True:
 	inp = input("Input something: ")
 	if (inp == "exit"):

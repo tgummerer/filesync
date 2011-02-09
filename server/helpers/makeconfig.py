@@ -29,12 +29,12 @@ host = input("Please enter the database host (If you don't know it most likely '
 port = input("Please enter the port on which the database runs: ")
 database = input("Please enter the database name: ")
 
-config['postgres'] = {}
-config['postgres']['username'] = username
-config['postgres']['password'] = password
-config['postgres']['host'] = host
-config['postgres']['port'] = port
-config['postgres']['database'] = database
+config['db'] = {}
+config['db']['username'] = username
+config['db']['password'] = password
+config['db']['host'] = host
+config['db']['port'] = port
+config['db']['database'] = database
 with open('../config.ini', 'w') as configfile:
 	config.write(configfile)
 

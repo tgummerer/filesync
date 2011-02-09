@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Simple echo server for testing
+# Insert a new user into the database
 #   Copyright (C) 2011 Thomas Gummerer
 #
 # This file is part of Filesync.
@@ -31,21 +31,14 @@ def getProperty(configFile, section, prop):
 		print ('Configuration file does not exist, or is corrupted. Please create it using helpers/makeconfig.py');
 		return ''
 
-import socket
+# Postgresql connection made using py-postgresql - http://python.projects.postgresql.org/
+import postgresql
+# Create configuration file first
 
-s = socket.socket()
-host = '' # Means all available interfaces
-port = 13131
-s.bind((host, port))
+username = getProperty('../config.ini', 'db', 'username')
+password = getProperty('../config.ini', 'db', 'password')
+host = getProperty('../config.ini', 'db', 'host')
+port = getProperty('../config.ini', 'db', 'port')
+database = getProperty('../config.ini', 'db', 'database')
 
-s.listen(1)
-con, addr = s.accept()
-print ('Connected to:', addr)
-while True:
-   echo = con.recv(4096)
-   if (echo.decode("ascii") == "exit"):
-	   break
-   con.send(echo)
-
-con.close()
-
+db = postgresql.open(user = username, password = password, host = host, port = port, database = database)

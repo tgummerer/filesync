@@ -1,7 +1,11 @@
 SERVER:
+PostgerSQL:
 For installing the server you past have py-postgresql installed. Download it at http://python.projects.postgresql.org/
 The configuration file for the server has to be created using helpers/makeconfig.py in the server package. Make sure to run the script from the helpers folder, to make sure the config file is placed in the right place.
-To create a new user, that should be able to connect to the server, use helpers/newuser.py in the server package
+Also use the sql/create.sql script in the server package to set up the database scheme.
+
+Creating a new user:
+To create a new user, that should be able to connect to the server, use helpers/newuser.py in the server package. Passwords are stored encrypted in the database using the sha1 algorithm
 
 CLIENT:
 The configuration file has to be created using helpers/makeconfig.py in the client package. Make sure to run the script from the helpers folder, to make sure the config file is placed in the right place.

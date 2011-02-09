@@ -42,3 +42,12 @@ port = getProperty('../config.ini', 'db', 'port')
 database = getProperty('../config.ini', 'db', 'database')
 
 db = postgresql.open(user = username, password = password, host = host, port = port, database = database)
+
+newemail = input("Email: ")
+import getpass
+newpassword = getpass.getpass("Password: ")
+
+import hashlib
+stmt = db.prepare('INSERT INTO usertable (email, password) VALUES ($1, $2)')
+
+ex = stmt(newemail, hashlib.sha1(newpassword.encode("ascii")).hexdigest())

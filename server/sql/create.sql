@@ -1,4 +1,4 @@
-CREATE TABLE "user"
+CREATE TABLE usertable
 (
   userid integer NOT NULL DEFAULT nextval('user_id_seq'::regclass),
   email text NOT NULL,

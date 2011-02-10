@@ -47,7 +47,7 @@ newemail = input("Email: ")
 import getpass
 newpassword = getpass.getpass("Password: ")
 
-import hashlib
 stmt = db.prepare('INSERT INTO usertable (email, password) VALUES ($1, $2)')
 
+import hashlib
 ex = stmt(newemail, hashlib.sha1(newpassword.encode("ascii")).hexdigest())

@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-# Simple echo server for testing
+# Connection thread
 #   Copyright (C) 2011 Thomas Gummerer
 #
 # This file is part of Filesync.
@@ -18,34 +16,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Filesync.  If not, see <http://www.gnu.org/licenses/>. 
 
-def getProperty(configFile, section, prop):
-	try:
-		import configparser
-		config = configparser.ConfigParser()
+from threading import Thread
 
-		config.read(configFile)
-
-		return config[section][prop]
-
-	except KeyError:
-		print ('Configuration file does not exist, or is corrupted. Please create it using helpers/makeconfig.py');
-		return ''
-
-import socket
-
-s = socket.socket()
-host = '' # Means all available interfaces
-port = 13131
-s.bind((host, port))
-
-s.listen(1)
-
-import connection
-while True:
-	con, addr = s.accept()
-
-	current = connection.Client(con, addr)
-	current.run()
-
-con.close()
-
+class Client(Thread):
+	
+	def __init__(self, con, addr):
+		self.con = con
+		self.addr = addr
+	
+	def run(self):
+		i = 0
+		while True:
+			i = i + 1
+			print (self.con.recv(4096).decode("ascii"))
+			self.con.send(bytes("0", "ascii"))
+			if (i == 2):
+				self.con.close()
+				break

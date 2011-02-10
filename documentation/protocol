@@ -1,0 +1,9 @@
+Server:
+0 - everything is right, please continue
+1 - something is wrong. Please retry
+
+
+
+Client:
+0 username - Hello, I'm username
+1 password - Following to the 0 username. Password is send SHA1 encrypted

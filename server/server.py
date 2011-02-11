@@ -45,7 +45,6 @@ while True:
 	con, addr = s.accept()
 
 	current = connection.Client(con, addr)
-	current.run()
+	current.start()
 
 con.close()
-

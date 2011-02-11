@@ -16,15 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Filesync.  If not, see <http://www.gnu.org/licenses/>. 
 
-from threading import Thread
+import threading
 import socket
 import db
 
-class Client(Thread):
+class Client(threading.Thread):
 	# Initialization
 	_db = None
 	
 	def __init__(self, con, addr):
+		threading.Thread.__init__(self)
 		self.con = con
 		self.addr = addr
 

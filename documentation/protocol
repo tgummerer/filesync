@@ -7,3 +7,6 @@ Server:
 Client:
 0 username - Hello, I'm username
 1 password - Following to the 0 username. Password is send SHA1 encrypted
+
+2 filename - In the following message I will transmit a new file with the filename filename
+3 fileid   - In the following message I will transmit a changed file with the fileid fileid that is already in the database

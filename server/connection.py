@@ -51,11 +51,13 @@ class Client(Thread):
 				# Split the string on the first occurence of a blank. Protocol says all send strings are
 				# a number followed by a blank, followed by the thing that is sent
 				split = rec.partition(' ')
-				if (split[0] == '0'):    # Username
+
+				if (split[0] == '0'):			# Username
 					username = split[2]
 					# For now always accept the username. Might change in future versions
 					self.con.send(bytes("0", "ascii"))
-				elif (split[0] == '1'):  # Password
+
+				elif (split[0] == '1'):  		# Password
 					password = split[2]
 					userid = self._checkUsernamePassword(username, password)
 					if ((username != None) and (password != None) and 
@@ -66,6 +68,14 @@ class Client(Thread):
 						self.con.send(bytes("1", "ascii"))
 						break
 
+				elif (split[0] == '2'):			# New file
+					filename = split[2]
+					self._db.executeQuery("insert into filetable (userid, path) values ('"+filename+"', "+userid+")")
+					# TODO: getfile and save it to disk
+
+				elif (split[0] =='3'):			# Changed file
+					fileid = split[2]
+					self._db.executeQuery("update filetable set lastchange = now() where fileid = " + fileid)
 
 			except socket.error:
 				break

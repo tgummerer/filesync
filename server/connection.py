@@ -17,19 +17,57 @@
 # along with Filesync.  If not, see <http://www.gnu.org/licenses/>. 
 
 from threading import Thread
+import socket
+import db
 
 class Client(Thread):
+	# Initialization
+	_db = None
 	
 	def __init__(self, con, addr):
 		self.con = con
 		self.addr = addr
+
+		# Set up db connection
+		self._db = db.Db()
+
+	def _checkUsernamePassword(self, username, password):
+		result = self._db.executeSelect("select * from usertable where email = '" + username + "' and password = '" + password + "'")
+		if (result.first() is None):
+			return False
+		else:
+			# Return userid
+			return result.first()[0]
+		
 	
 	def run(self):
-		i = 0
+		# Define this variables here, to have them available in the whole method
+		username = None
+		password = None
+		userid = None
 		while True:
-			i = i + 1
-			print (self.con.recv(4096).decode("ascii"))
-			self.con.send(bytes("0", "ascii"))
-			if (i == 2):
-				self.con.close()
+			try:
+				rec = self.con.recv(4096).decode("ascii")
+				# Split the string on the first occurence of a blank. Protocol says all send strings are
+				# a number followed by a blank, followed by the thing that is sent
+				split = rec.partition(' ')
+				if (split[0] == '0'):    # Username
+					username = split[2]
+					# For now always accept the username. Might change in future versions
+					self.con.send(bytes("0", "ascii"))
+				elif (split[0] == '1'):  # Password
+					password = split[2]
+					userid = self._checkUsernamePassword(username, password)
+					if ((username != None) and (password != None) and 
+						(userid != None)):
+						self.con.send(bytes("0", "ascii"))
+						print (userid)
+					else:
+						self.con.send(bytes("1", "ascii"))
+						break
+
+
+			except socket.error:
 				break
+
+		#_db.close()

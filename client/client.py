@@ -77,12 +77,14 @@ password = getProperty(configFile, 'userdata', 'password')
 con.send(bytes("0 " + username, "ascii"))
 if (con.recieve().decode("ascii") == 1):
 	print ("Username is wrong. Please edit it in the config.ini file.")
+	con.close()
 	exit()
 
 
 con.send(bytes("1 " + password, "ascii"))
 if (con.recieve().decode("ascii") == 1):
 	print ("Wrong password. Please change it in the config.ini file.")
+	con.close()
 	exit()
 
 con.close()

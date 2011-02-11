@@ -87,5 +87,26 @@ if (con.recieve().decode("ascii") == 1):
 	con.close()
 	exit()
 
+import os
+from os.path import join, getsize
+while True:
+	text = input("Type 'sync' to synchronize the sync folder, 'exit' to exit: ")
+	if (text == 'sync'):
+		#for root, dirs, files in os.walk('/etc'):
+			#for name in files:
+			#	print (join(root, name))
+
+			#for name in dirs:
+				print (name)
+			#print (root, "consumes")
+			#print (sum(getsize(join(root, name)) for name in files))
+			#print ("bytes in", len(files), "non-directory files")
+	 
+	elif (text == 'exit'):
+		break
+	
+# Send exit code
+con.send(bytes("16", "ascii"))
+
 con.close()
 

@@ -74,9 +74,12 @@ class Client(threading.Thread):
 					self._db.executeQuery("insert into filetable (userid, path) values ('"+filename+"', "+userid+")")
 					# TODO: getfile and save it to disk
 
-				elif (split[0] =='3'):			# Changed file
+				elif (split[0] == '3'):			# Changed file
 					fileid = split[2]
 					self._db.executeQuery("update filetable set lastchange = now() where fileid = " + fileid)
+
+				elif (split[0] == '16'):		# Exit
+					break
 
 			except socket.error:
 				break

@@ -89,18 +89,18 @@ if (con.recieve().decode("ascii") == 1):
 
 import os
 from os.path import join, getsize
+syncdir = getProperty(configFile, 'config', 'syncpath')
 while True:
 	text = input("Type 'sync' to synchronize the sync folder, 'exit' to exit: ")
 	if (text == 'sync'):
-		#for root, dirs, files in os.walk('/etc'):
-			#for name in files:
-			#	print (join(root, name))
+		for root, dirs, files in os.walk(syncdir):
+			for name in files:
+				# Check if trailing / was given by user or not. Important for cutting the first piece of the string out, and only having the relative path to the file
+				if syncdir.endswith('/'):
+					print (join(root, name)[len(syncdir):])
+				else:
+					print (join(root, name)[len(syncdir)+1:])
 
-			#for name in dirs:
-				print (name)
-			#print (root, "consumes")
-			#print (sum(getsize(join(root, name)) for name in files))
-			#print ("bytes in", len(files), "non-directory files")
 	 
 	elif (text == 'exit'):
 		break

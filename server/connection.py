@@ -64,7 +64,6 @@ class Client(threading.Thread):
 					if ((username != None) and (password != None) and 
 						(userid != None)):
 						self.con.send(bytes("0", "ascii"))
-						print (userid)
 					else:
 						self.con.send(bytes("1", "ascii"))
 						break

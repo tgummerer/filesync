@@ -46,7 +46,7 @@ class Db():
 		self._db = postgresql.open(user = username, password = password, host = host, port = port, database = database)
 
 	def executeQuery(self, query):
-		return self._db.execute(query)
+		self._db.execute(query)
 
 	
 	def getLastIndex(self, sequence):

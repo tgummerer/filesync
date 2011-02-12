@@ -21,8 +21,6 @@ import socket
 import db
 
 class Client(threading.Thread):
-	# Initialization
-	_db = None
 	
 	def __init__(self, con, addr):
 		threading.Thread.__init__(self)
@@ -39,13 +37,27 @@ class Client(threading.Thread):
 		else:
 			# Return userid
 			return result.first()[0]
+
+	def _checkUsername(self, username):
+		# For now always accept the username. Might change in future versions
+		self.con.send(bytes("0", "ascii"))
+
+	def _checkPassword(self, password):
+		self._userid = self._checkUsernamePassword(self._username, password)
+		if ((self._username != None) and (password != None) and 
+			(self._userid != None)):
+			self.con.send(bytes("0", "ascii"))
+		else:
+			self.con.send(bytes("1", "ascii"))
+			thread.exit()
+
+	def _newFile(self, filename):
+		self._db.executeQuery("insert into filetable (userid, filename) values ("+self._userid+", '"+filename+"')")
 		
-	
 	def run(self):
 		# Define this variables here, to have them available in the whole method
 		username = None
 		password = None
-		userid = None
 		while True:
 			try:
 				rec = self.con.recv(4096).decode("ascii")
@@ -54,24 +66,16 @@ class Client(threading.Thread):
 				split = rec.partition(' ')
 
 				if (split[0] == '0'):			# Username
-					username = split[2]
-					# For now always accept the username. Might change in future versions
-					self.con.send(bytes("0", "ascii"))
+					self._username = split[2]
+					self._checkUsername(self._username)
 
 				elif (split[0] == '1'):  		# Password
-					password = split[2]
-					userid = self._checkUsernamePassword(username, password)
-					if ((username != None) and (password != None) and 
-						(userid != None)):
-						self.con.send(bytes("0", "ascii"))
-					else:
-						self.con.send(bytes("1", "ascii"))
-						break
-
+					self._password = split[2]
+					self._checkPassword(self._password)
+					
 				elif (split[0] == '2'):			# New file
 					filename = split[2]
-					self._db.executeQuery("insert into filetable (userid, path) values ('"+filename+"', "+userid+")")
-					# TODO: getfile and save it to disk
+					self._newfile(filename)
 
 				elif (split[0] == '3'):			# Changed file
 					fileid = split[2]

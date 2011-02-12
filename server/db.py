@@ -46,7 +46,13 @@ class Db():
 		self._db = postgresql.open(user = username, password = password, host = host, port = port, database = database)
 
 	def executeQuery(self, query):
-		self._db.execute(query)
+		return self._db.execute(query)
+
+	
+	def getLastIndex(self, sequence):
+		index = self._db.execute("SELECT nextval ('"+sequence+"')")
+		print (index)
+		return index
 
 	def executeSelect(self, query):
 		return self._db.prepare(query)

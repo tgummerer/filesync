@@ -40,27 +40,28 @@ class Client(threading.Thread):
 
 	def _checkUsername(self, username):
 		# For now always accept the username. Might change in future versions
-		self.con.send(bytes("0", "ascii"))
+		self.con.send(bytes("0", "utf8"))
 
 	def _checkPassword(self, password):
 		self._userid = self._checkUsernamePassword(self._username, password)
 		if ((self._username != None) and (password != None) and 
 			(self._userid != None)):
-			self.con.send(bytes("0", "ascii"))
+			self.con.send(bytes("0", "utf8"))
 		else:
-			self.con.send(bytes("1", "ascii"))
+			self.con.send(bytes("1", "utf8"))
 			thread.exit()
 
 	def _newFile(self, filename):
-		self._db.executeQuery("insert into filetable (userid, filename) values ("+self._userid+", '"+filename+"')")
-		
+		index = self._db.executeSelect("insert into filetable (userid, path) values (" + str(self._userid) + ", '" + filename + "') RETURNING fileid")
+		self.con.send(bytes(str(index.first()), "utf8"))
+
+	def _updateFile(self, fileid):
+		self._db.executeQuery("update filetable set lastchange = now() where fileid = " + fileid)
+
 	def run(self):
-		# Define this variables here, to have them available in the whole method
-		username = None
-		password = None
 		while True:
 			try:
-				rec = self.con.recv(4096).decode("ascii")
+				rec = self.con.recv(4096).decode("utf8")
 				# Split the string on the first occurence of a blank. Protocol says all send strings are
 				# a number followed by a blank, followed by the thing that is sent
 				split = rec.partition(' ')
@@ -75,11 +76,11 @@ class Client(threading.Thread):
 					
 				elif (split[0] == '2'):			# New file
 					filename = split[2]
-					self._newfile(filename)
+					self._newFile(filename)
 
 				elif (split[0] == '3'):			# Changed file
 					fileid = split[2]
-					self._db.executeQuery("update filetable set lastchange = now() where fileid = " + fileid)
+					self._updateFile(fileid)
 
 				elif (split[0] == '16'):		# Exit
 					break

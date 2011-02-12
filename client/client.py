@@ -63,7 +63,7 @@ if (not(isInConfig(configFile, 'userdata'))):
 	config['userdata'] = {}
 	config['userdata']['username'] = input("Username: ")
 	# Know this should not be done, but I don't like to write more than one line for it
-	config['userdata']['password'] = hashlib.sha1(getpass.getpass("Password: ").encode("ascii")).hexdigest()
+	config['userdata']['password'] = hashlib.sha1(getpass.getpass("Password: ").encode("utf8")).hexdigest()
 
 	with open('config.ini', 'w') as configfile:
 		config.write(configfile)
@@ -74,15 +74,15 @@ username = getProperty(configFile, 'userdata', 'username')
 password = getProperty(configFile, 'userdata', 'password')
 
 # TODO Give the user a chance to correct the credentials
-con.send(bytes("0 " + username, "ascii"))
-if (con.recieve().decode("ascii") == 1):
+con.send(bytes("0 " + username, "utf8"))
+if (con.recieve().decode("utf8") == 1):
 	print ("Username is wrong. Please edit it in the config.ini file.")
 	con.close()
 	exit()
 
 
-con.send(bytes("1 " + password, "ascii"))
-if (con.recieve().decode("ascii") == 1):
+con.send(bytes("1 " + password, "utf8"))
+if (con.recieve().decode("utf8") == 1):
 	print ("Wrong password. Please change it in the config.ini file.")
 	con.close()
 	exit()
@@ -95,18 +95,23 @@ while True:
 	if (text == 'sync'):
 		for root, dirs, files in os.walk(syncdir):
 			for name in files:
+				path = None
 				# Check if trailing / was given by user or not. Important for cutting the first piece of the string out, and only having the relative path to the file
 				if syncdir.endswith('/'):
-					print (join(root, name)[len(syncdir):])
+					path = (join(root, name)[len(syncdir):])
 				else:
-					print (join(root, name)[len(syncdir)+1:])
+					path = (join(root, name)[len(syncdir)+1:])
+
+				con.send(bytes("2 " + path, "utf8"))
+				# TODO Insert this shit into a sqlite database
+				(con.recieve().decode("utf8")
 
 	 
 	elif (text == 'exit'):
 		break
 	
 # Send exit code
-con.send(bytes("16", "ascii"))
+con.send(bytes("16", "utf8"))
 
 con.close()
 

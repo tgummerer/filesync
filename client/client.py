@@ -88,7 +88,8 @@ if (con.recieve().decode("utf8") == 1):
 	exit()
 
 import os
-from os.path import join, getsize
+from os.path import join, getsize, getmtime
+import datetime
 syncdir = getProperty(configFile, 'config', 'syncpath')
 while True:
 	text = input("Type 'sync' to synchronize the sync folder, 'exit' to exit: ")
@@ -103,8 +104,17 @@ while True:
 					path = (join(root, name)[len(syncdir)+1:])
 
 				con.send(bytes("2 " + path, "utf8"))
+				if(con.recieve().decode("utf8") == "0"):
+					# Send timestamp
+					# TODO Check if everything is right with timezone etc.
+					con.send(bytes("4 " + str(datetime.datetime.fromtimestamp(getmtime(join(root,name)))), "utf8"))
+				else:
+					# Something went wrong
+					con.send(bytes("16", "utf8"))
+					exit()
+
 				# TODO Insert this shit into a sqlite database
-				(con.recieve().decode("utf8")
+				print (con.recieve().decode("utf8"))
 
 	 
 	elif (text == 'exit'):

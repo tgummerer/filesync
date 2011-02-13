@@ -10,3 +10,4 @@ Client:
 
 2 filename - In the following message I will transmit a new file with the filename filename
 3 fileid   - In the following message I will transmit a changed file with the fileid fileid that is already in the database
+4 date     - Send the last modification date of the file (After the server responded with 0 to the 2 or 3 command of the client)

@@ -52,7 +52,19 @@ class Client(threading.Thread):
 			thread.exit()
 
 	def _newFile(self, filename):
-		index = self._db.executeSelect("insert into filetable (userid, path) values (" + str(self._userid) + ", '" + filename + "') RETURNING fileid")
+		self.con.send(bytes("0", "utf8"))
+		# Get changetime
+		rec = self.con.recv(4096).decode("utf8")
+		split = rec.partition(" ")
+		lastchange = None
+		if (split[0] == "4"):
+			# Get the date on which the file was created
+			lastchange = split[2]
+		else:
+			# Something went wrong. Kick the client out.
+			exit()
+
+		index = self._db.executeSelect("insert into filetable (userid, path, lastchange) values (" + str(self._userid) + ", '" + filename + "', '" + lastchange + "') RETURNING fileid")
 		self.con.send(bytes(str(index.first()), "utf8"))
 
 	def _updateFile(self, fileid):

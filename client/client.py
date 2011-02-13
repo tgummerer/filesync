@@ -91,6 +91,9 @@ import os
 from os.path import join, getsize, getmtime
 import datetime
 syncdir = getProperty(configFile, 'config', 'syncpath')
+import sqlite3
+dbcon = sqlite3.connect('db')
+c = dbcon.cursor()
 while True:
 	text = input("Type 'sync' to synchronize the sync folder, 'exit' to exit: ")
 	if (text == 'sync'):
@@ -104,21 +107,28 @@ while True:
 					path = (join(root, name)[len(syncdir)+1:])
 
 				con.send(bytes("2 " + path, "utf8"))
+				changetime = None
 				if(con.recieve().decode("utf8") == "0"):
 					# Send timestamp
 					# TODO Check if everything is right with timezone etc.
-					con.send(bytes("4 " + str(datetime.datetime.fromtimestamp(getmtime(join(root,name)))), "utf8"))
+					changetime = datetime.datetime.fromtimestamp(getmtime(join(root,name)))
+					con.send(bytes("4 " + str(changetime), "utf8"))
 				else:
 					# Something went wrong
 					con.send(bytes("16", "utf8"))
 					exit()
 
 				# TODO Insert this shit into a sqlite database
-				print (con.recieve().decode("utf8"))
+				fileid = con.recieve().decode("utf8")
+				print (fileid)
+				c.execute("insert into filetable values(" + fileid + ", '" + path + "', '" + str(changetime) + "');")
 
-	 
+		# Commit the query, after all files have been checked
+		dbcon.commit()
 	elif (text == 'exit'):
 		break
+
+c.close() # Close cursor once it is no longer needed
 	
 # Send exit code
 con.send(bytes("16", "utf8"))

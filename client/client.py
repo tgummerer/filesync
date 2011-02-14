@@ -45,6 +45,19 @@ def isInConfig(configFile, section):
 		print ('Configuration file does not exist, or is corrupted. Please create it using helpers/makeconfig.py');
 		return ''
 
+def getUserData():
+	import configparser
+	config = configparser.ConfigParser()
+	config.read(configFile)
+	config['userdata'] = {}
+	config['userdata']['username'] = input("Username: ")
+	# Know this should not be done, but I don't like to write more than one line for it
+	config['userdata']['password'] = hashlib.sha1(getpass.getpass("Password: ").encode("utf8")).hexdigest()
+
+	with open('config.ini', 'w') as configfile:
+		config.write(configfile)
+	
+
 ###############################################################################
 
 # Path to configuration file
@@ -57,17 +70,8 @@ con = connection.Connection(getProperty(configFile, 'config', 'serveraddress'))
 
 # Credentials not in the config file, ask the user for them and write them to config file
 if (not(isInConfig(configFile, 'userdata'))):
-	import configparser
-	config = configparser.ConfigParser()
-	config.read(configFile)
-	config['userdata'] = {}
-	config['userdata']['username'] = input("Username: ")
-	# Know this should not be done, but I don't like to write more than one line for it
-	config['userdata']['password'] = hashlib.sha1(getpass.getpass("Password: ").encode("utf8")).hexdigest()
+	getUserData()
 
-	with open('config.ini', 'w') as configfile:
-		config.write(configfile)
-	
 	
 # Get the credentials from the config file
 username = getProperty(configFile, 'userdata', 'username')

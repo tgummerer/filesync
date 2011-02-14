@@ -72,11 +72,28 @@ class Client(threading.Thread):
 		self.con.send(bytes(str(fileid), "utf8"))
 
 	def _updateFile(self, fileid):
-		self._db.executeQuery("update filetable set lastchange = now() where fileid = " + fileid)
+		self.con.send(bytes("0", "utf8"))
+		rec = self.con.recv(4096).decode("utf8")
+		split = rec.partition(" ")
+		lastchange = None
+		if (split[0] == "6"):
+			# Get the date on which the file was created
+			lastchange = split[2]
+		else:
+			# Something went wrong. Kick the client out.
+			exit()
+
+
+		print (fileid)
+		self._db.executeQuery("update filetable set lastchange = '" + lastchange + "' where fileid = " + fileid)
+		self._db.executeQuery("delete from hasnewest where fileid = " + str(fileid))
+		self._db.executeQuery("insert into hasnewest(clientid, fileid) values (" + self._clientid + ", " + str(fileid) + ")")
+		self.con.send(bytes("0", "utf8"))
+
+
 
 	def _sendClientId(self):
 		index = self._db.executeSelect("insert into client (userid) values (" + str(self._userid) + ") returning clientid")
-		print (index.first())
 		self.con.send(bytes(str(index.first()), "utf8"))
 
 	def run(self):

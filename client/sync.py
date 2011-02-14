@@ -18,8 +18,10 @@
 
 import sqlite3
 import os
-from os.path import join, getsize, getmtime
+from os.path import join, getsize, getmtime, getatime
 import datetime
+import time
+import random
 
 class Sync():
 	
@@ -38,26 +40,67 @@ class Sync():
 
 	def sync(self):
 		c = self._dbcon.cursor()
-		for root, dirs, files in os.walk(self._syncdir):
-			for name in files:
-				path = join(root, name)[len(self._syncdir):]
+		# TODO Check if some file hase changed. Check by checking st_atime for syncpath
+		c.execute ("select max(lastchange) from filetable")
+		# Initialize to a very old time, for the first time the syncronization runs
+		stime = "1970-01-01 00:00:00"
+		for row in c:
+			if (not(row[0] == None)):
+				stime = row[0]
 
-				self._con.send(bytes("4 " + path, "utf8"))
-				changetime = None
-				if(self._con.recieve().decode("utf8") == "0"):
-					# Send timestamp
-					# TODO Check if everything is right with timezone etc.
-					changetime = datetime.datetime.fromtimestamp(getmtime(join(root,name)))
-					self._con.send(bytes("6 " + str(changetime), "utf8"))
-				else:
-					# Something went wrong
-					self._con.send(bytes("16", "utf8"))
-					exit()
+		# Only do something if a file has changed
+		time_format = "%Y-%m-%d %H:%M:%S"
+		if (time.mktime(time.strptime(stime, time_format)) < getatime(self._syncdir)):
+			c.execute ("select * from filetable")
+			i = None
+			rows = {}
+			for row in c:
+				rows[row[1]] = row
 
-				fileid = self._con.recieve().decode("utf8")
-				c.execute("insert into filetable values(" + fileid + ", '" + path + "', '" + str(changetime) + "');")
+			for root, dirs, files in os.walk(self._syncdir):
+				for name in files:
+					path = join(root, name)[len(self._syncdir):]
 
-		# Commit the query, after all files have been checked
-		self._dbcon.commit()
-		c.close()
+					
+					if (path in rows):		# File exists, update or leave it alone
+						if (time.mktime(time.strptime(rows[path][2], time_format)) < getmtime(join(root, name))):
+											# File has to be updated
+							self._con.send(bytes("5 " + str(rows[path][0]), "utf8"))
+							changetime = None
+							if(self._con.recieve().decode("utf8") == "0"):
+								# Send timestamp
+								# TODO Check if everything is right with timezone etc.
+								changetime = datetime.datetime.fromtimestamp(getmtime(join(root,name)))
+								self._con.send(bytes("6 " + str(changetime), "utf8"))
+							else:
+								# Something went wrong
+								self._con.send(bytes("16", "utf8"))
+								exit()
+
+							# Just wait for the message, nothing else
+							self._con.recieve()
+							c.execute("update filetable set lastchange = '" + str(changetime) + "' where fileid = " + str(rows[path][0]))
+
+						else:				# Leave file alone
+							pass
+					else:					# File does not exist, send it to the server
+
+						self._con.send(bytes("4 " + path, "utf8"))
+						changetime = None
+						if(self._con.recieve().decode("utf8") == "0"):
+							# Send timestamp
+							# TODO Check if everything is right with timezone etc.
+							changetime = datetime.datetime.fromtimestamp(getmtime(join(root,name)))
+							self._con.send(bytes("6 " + str(changetime), "utf8"))
+						else:
+							# Something went wrong
+							self._con.send(bytes("16", "utf8"))
+							exit()
+
+						fileid = self._con.recieve().decode("utf8")
+						c.execute("insert into filetable values(" + fileid + ", '" + path + "', '" + str(changetime) + "');")
+
+			# Commit the query, after all files have been checked
+			self._dbcon.commit()
+			c.close()
 

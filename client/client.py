@@ -87,49 +87,16 @@ if (con.recieve().decode("utf8") == 1):
 	con.close()
 	exit()
 
-import os
-from os.path import join, getsize, getmtime
-import datetime
+import sync
 syncdir = getProperty(configFile, 'config', 'syncpath')
-import sqlite3
-dbcon = sqlite3.connect('db')
-c = dbcon.cursor()
+sy = sync.Sync(syncdir, con)
 while True:
 	text = input("Type 'sync' to synchronize the sync folder, 'exit' to exit: ")
 	if (text == 'sync'):
-		for root, dirs, files in os.walk(syncdir):
-			for name in files:
-				path = None
-				# Check if trailing / was given by user or not. Important for cutting the first piece of the string out, and only having the relative path to the file
-				if syncdir.endswith('/'):
-					path = (join(root, name)[len(syncdir):])
-				else:
-					path = (join(root, name)[len(syncdir)+1:])
-
-				con.send(bytes("2 " + path, "utf8"))
-				changetime = None
-				if(con.recieve().decode("utf8") == "0"):
-					# Send timestamp
-					# TODO Check if everything is right with timezone etc.
-					changetime = datetime.datetime.fromtimestamp(getmtime(join(root,name)))
-					con.send(bytes("4 " + str(changetime), "utf8"))
-				else:
-					# Something went wrong
-					con.send(bytes("16", "utf8"))
-					exit()
-
-				# TODO Insert this shit into a sqlite database
-				fileid = con.recieve().decode("utf8")
-				print (fileid)
-				c.execute("insert into filetable values(" + fileid + ", '" + path + "', '" + str(changetime) + "');")
-
-		# Commit the query, after all files have been checked
-		dbcon.commit()
+		sy.sync()
 	elif (text == 'exit'):
 		break
 
-c.close() # Close cursor once it is no longer needed
-	
 # Send exit code
 con.send(bytes("16", "utf8"))
 

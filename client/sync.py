@@ -34,7 +34,7 @@ class Sync():
 		self._con = con
 
 	def _checkForUpdatedFiles(self):
-		
+		pass	
 
 	def sync(self):
 		c = self._dbcon.cursor()

@@ -8,6 +8,9 @@ Client:
 0 username - Hello, I'm username
 1 password - Following to the 0 username. Password is send SHA1 encrypted
 
+2		   - Give me a client id
+3 clientid - Hello, this is my clientid
+
 4 filename - In the following message I will transmit a new file with the filename filename
 5 fileid   - In the following message I will transmit a changed file with the fileid fileid that is already in the database
 6 date     - Send the last modification date of the file (After the server responded with 0 to the 2 or 3 command of the client)

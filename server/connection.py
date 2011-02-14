@@ -65,10 +65,19 @@ class Client(threading.Thread):
 			exit()
 
 		index = self._db.executeSelect("insert into filetable (userid, path, lastchange) values (" + str(self._userid) + ", '" + filename + "', '" + lastchange + "') RETURNING fileid")
-		self.con.send(bytes(str(index.first()), "utf8"))
+		fileid = index.first()
+
+		self._db.executeQuery("delete from hasnewest where fileid = " + str(fileid))
+		self._db.executeQuery("insert into hasnewest(clientid, fileid) values (" + self._clientid + ", " + str(fileid) + ")")
+		self.con.send(bytes(str(fileid), "utf8"))
 
 	def _updateFile(self, fileid):
 		self._db.executeQuery("update filetable set lastchange = now() where fileid = " + fileid)
+
+	def _sendClientId(self):
+		index = self._db.executeSelect("insert into client (userid) values (" + str(self._userid) + ") returning clientid")
+		print (index.first())
+		self.con.send(bytes(str(index.first()), "utf8"))
 
 	def run(self):
 		while True:
@@ -85,6 +94,12 @@ class Client(threading.Thread):
 				elif (split[0] == '1'):  		# Password
 					self._password = split[2]
 					self._checkPassword(self._password)
+
+				elif (split[0] == '2'):
+					self._sendClientId()
+
+				elif (split[0] == '3'):
+					self._clientid = split[2]
 					
 				elif (split[0] == '4'):			# New file
 					filename = split[2]

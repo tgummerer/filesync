@@ -57,8 +57,16 @@ def getUserData():
 	with open('config.ini', 'w') as configfile:
 		config.write(configfile)
 
+def getSyncData(con):
+	import configparser
+	config = configparser.ConfigParser()
+	config.read(configFile)
+	config['syncdata'] = {}
+	con.send(bytes("2", "utf8"))
+	config['syncdata']['clientid'] = con.recieve().decode("utf8")
 
-	
+	with open('config.ini', 'w') as configfile:
+		config.write(configfile)
 
 ###############################################################################
 
@@ -92,8 +100,11 @@ if (con.recieve().decode("utf8") == 1):
 	con.close()
 	exit()
 
-#if (not(isInConfig(configFile, 'syncdata'))):
-#	getSyncData()
+if (not(isInConfig(configFile, 'syncdata'))):
+	getSyncData(con)
+
+clientid = getProperty(configFile, 'syncdata', 'clientid')
+con.send(bytes("3 " + clientid, "utf8"))
 
 import sync
 syncdir = getProperty(configFile, 'config', 'syncpath')

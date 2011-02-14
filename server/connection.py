@@ -57,7 +57,7 @@ class Client(threading.Thread):
 		rec = self.con.recv(4096).decode("utf8")
 		split = rec.partition(" ")
 		lastchange = None
-		if (split[0] == "4"):
+		if (split[0] == "6"):
 			# Get the date on which the file was created
 			lastchange = split[2]
 		else:
@@ -86,11 +86,11 @@ class Client(threading.Thread):
 					self._password = split[2]
 					self._checkPassword(self._password)
 					
-				elif (split[0] == '2'):			# New file
+				elif (split[0] == '4'):			# New file
 					filename = split[2]
 					self._newFile(filename)
 
-				elif (split[0] == '3'):			# Changed file
+				elif (split[0] == '5'):			# Changed file
 					fileid = split[2]
 					self._updateFile(fileid)
 

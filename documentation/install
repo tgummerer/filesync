@@ -10,3 +10,5 @@ To create a new user, that should be able to connect to the server, use helpers/
 CLIENT:
 The configuration file has to be created using helpers/makeconfig.py in the client package. Make sure to run the script from the helpers folder, to make sure the config file is placed in the right place.
 A Sqlite database also has to be created. The helpers/makesqlitedb.py script can be used for it. Make sure to execute it from the helpers folder.
+
+ATTENTION: Change the syncdir after the first sync, only if you know what you are doing. Otherwise it could result in a big mess.

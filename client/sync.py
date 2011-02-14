@@ -33,19 +33,22 @@ class Sync():
 		self._dbcon = sqlite3.connect('db')
 		self._con = con
 
+	def _checkForUpdatedFiles(self):
+		
+
 	def sync(self):
 		c = self._dbcon.cursor()
 		for root, dirs, files in os.walk(self._syncdir):
 			for name in files:
 				path = join(root, name)[len(self._syncdir):]
 
-				self._con.send(bytes("2 " + path, "utf8"))
+				self._con.send(bytes("4 " + path, "utf8"))
 				changetime = None
 				if(self._con.recieve().decode("utf8") == "0"):
 					# Send timestamp
 					# TODO Check if everything is right with timezone etc.
 					changetime = datetime.datetime.fromtimestamp(getmtime(join(root,name)))
-					self._con.send(bytes("4 " + str(changetime), "utf8"))
+					self._con.send(bytes("6 " + str(changetime), "utf8"))
 				else:
 					# Something went wrong
 					self._con.send(bytes("16", "utf8"))

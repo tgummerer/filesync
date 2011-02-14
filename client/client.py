@@ -56,6 +56,8 @@ def getUserData():
 
 	with open('config.ini', 'w') as configfile:
 		config.write(configfile)
+
+
 	
 
 ###############################################################################
@@ -84,12 +86,14 @@ if (con.recieve().decode("utf8") == 1):
 	con.close()
 	exit()
 
-
 con.send(bytes("1 " + password, "utf8"))
 if (con.recieve().decode("utf8") == 1):
 	print ("Wrong password. Please change it in the config.ini file.")
 	con.close()
 	exit()
+
+#if (not(isInConfig(configFile, 'syncdata'))):
+#	getSyncData()
 
 import sync
 syncdir = getProperty(configFile, 'config', 'syncpath')

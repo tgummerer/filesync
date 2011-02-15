@@ -29,12 +29,17 @@ host = input("Please enter the database host (If you don't know it most likely '
 port = input("Please enter the port on which the database runs: ")
 database = input("Please enter the database name: ")
 
+savedir = input("Please give the name of the directory, where the files should be stored: ")
+
 config['db'] = {}
 config['db']['username'] = username
 config['db']['password'] = password
 config['db']['host'] = host
 config['db']['port'] = port
 config['db']['database'] = database
+
+config['files'] = {}
+config['files']['savedir'] = savedir
 with open('../config.ini', 'w') as configfile:
 	config.write(configfile)
 

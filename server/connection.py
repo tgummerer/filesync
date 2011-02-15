@@ -20,12 +20,16 @@ import threading
 import socket
 import db
 
+import os
+import os.path
+
 class Client(threading.Thread):
 	
-	def __init__(self, con, addr):
+	def __init__(self, con, addr, savedir):
 		threading.Thread.__init__(self)
 		self.con = con
 		self.addr = addr
+		self._savedir = savedir
 
 		# Set up db connection
 		self._db = db.Db()
@@ -51,6 +55,40 @@ class Client(threading.Thread):
 			self.con.send(bytes("1", "utf8"))
 			thread.exit()
 
+		# Set also the savedir to the correct one for the client
+		self._savedir = os.path.join(self._savedir, str(self._userid) + "/")
+
+
+	def _recieveFile(self, path):
+		# Recieve the file from the client
+		# Current solution: Hope that no last chunk of a file begins with "8" encoded in utf8
+		writefile = open(path, 'wb')
+		rec = self.con.recv(4096)
+		while (rec != bytes("8", "utf8")):
+			writefile.write(rec)
+			rec = self.con.recv(4096)
+
+	def _storeFile(self, path):
+		# Check if savedir exists
+		if (not(os.path.exists(self._savedir))):
+			try:
+				os.makedirs(self._savedir)
+			except error:
+				print ("Something went wrong with the path creation")
+				exit()
+		
+		pathfile = os.path.split (path)
+
+		if (not(os.path.exists(os.path.join(self._savedir, pathfile[0])))):
+			try:
+				os.makedirs(os.path.join(self.savedir, pathfile[0]))
+			except error:
+				print ("Something went wrong with the path creation")
+				exit()
+
+		# Everything is set up, recieve the file and write it to the disk
+		self._recieveFile(os.path.join(self._savedir, path))
+
 	def _newFile(self, filename):
 		self.con.send(bytes("0", "utf8"))
 		# Get changetime
@@ -69,7 +107,11 @@ class Client(threading.Thread):
 
 		self._db.executeQuery("delete from hasnewest where fileid = " + str(fileid))
 		self._db.executeQuery("insert into hasnewest(clientid, fileid) values (" + self._clientid + ", " + str(fileid) + ")")
+		self.con.send(bytes("0", "utf8"))
+		# Filename includes the whole path. (Poor naming anyway)
+		self._storeFile(filename)
 		self.con.send(bytes(str(fileid), "utf8"))
+
 
 	def _updateFile(self, fileid):
 		self.con.send(bytes("0", "utf8"))
@@ -88,6 +130,9 @@ class Client(threading.Thread):
 		self._db.executeQuery("update filetable set lastchange = '" + lastchange + "' where fileid = " + fileid)
 		self._db.executeQuery("delete from hasnewest where fileid = " + str(fileid))
 		self._db.executeQuery("insert into hasnewest(clientid, fileid) values (" + self._clientid + ", " + str(fileid) + ")")
+		self.con.send(bytes("0", "uft8"))
+		path = self._db.executeQuery("select path from filetable where fileid = " + fileid)
+		self._storeFile(path.first()[0])
 		self.con.send(bytes("0", "utf8"))
 
 

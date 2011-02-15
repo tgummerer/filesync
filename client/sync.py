@@ -35,8 +35,13 @@ class Sync():
 		self._dbcon = sqlite3.connect('db')
 		self._con = con
 
-	def _checkForUpdatedFiles(self):
-		pass	
+	def _sendFile(self, path):
+		sendfile = open(path, 'rb')
+		data = sendfile.read()
+		self._con.sendall(data)
+		# When finished sending the file indicate you have done so by sending "8" encoded in utf8. Does not sound like a good solution, trying to change in coming versions
+		self._con.send(bytes("8", "utf8"))
+
 
 	def sync(self):
 		c = self._dbcon.cursor()
@@ -77,6 +82,9 @@ class Sync():
 								self._con.send(bytes("16", "utf8"))
 								exit()
 
+							if (self._con.recieve().decode("utf8") == "0"):
+								self._sendFile(join(root, name))
+
 							# Just wait for the message, nothing else
 							self._con.recieve()
 							c.execute("update filetable set lastchange = '" + str(changetime) + "' where fileid = " + str(rows[path][0]))
@@ -96,6 +104,10 @@ class Sync():
 							# Something went wrong
 							self._con.send(bytes("16", "utf8"))
 							exit()
+
+						# Send file
+						if (self._con.recieve().decode("utf8") == "0"):
+							self._sendFile(join(root, name))
 
 						fileid = self._con.recieve().decode("utf8")
 						c.execute("insert into filetable values(" + fileid + ", '" + path + "', '" + str(changetime) + "');")

@@ -34,5 +34,8 @@ class Connection:
 	def send(self, string):
 		self.s.send(string)
 
+	def sendall(self, string):
+		self.s.sendall(string)
+
 	def close(self):
 		self.s.close();

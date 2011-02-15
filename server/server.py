@@ -33,6 +33,7 @@ def getProperty(configFile, section, prop):
 
 import socket
 
+savedir = getProperty('config.ini', 'files', 'savedir')
 s = socket.socket()
 host = '' # Means all available interfaces
 port = 13131
@@ -44,7 +45,7 @@ import connection
 while True:
 	con, addr = s.accept()
 
-	current = connection.Client(con, addr)
+	current = connection.Client(con, addr, savedir)
 	current.start()
 
 con.close()

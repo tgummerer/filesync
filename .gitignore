@@ -1,3 +1,6 @@
 server/config.ini
 client/config.ini
 client/db
+
+/client/__pycache__/
+/server/__pycache__/

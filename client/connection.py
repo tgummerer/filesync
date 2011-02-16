@@ -28,8 +28,8 @@ class Connection:
 
 		self.s.connect((socket.gethostbyname(host), port))
 
-	def recieve(self):
-		return self.s.recv(4096)
+	def recieve(self, nobytes = 4096):
+		return self.s.recv(nobytes)
 
 	def send(self, string):
 		self.s.send(string)

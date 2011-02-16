@@ -38,10 +38,14 @@ class Sync():
 	def _sendFile(self, path):
 		sendfile = open(path, 'rb')
 		data = sendfile.read()
-		self._con.sendall(data)
-		# When finished sending the file indicate you have done so by sending "8" encoded in utf8. Does not sound like a good solution, trying to change in coming versions
-		self._con.send(bytes("8", "utf8"))
 
+		print("send")
+		self._con.sendall(data)
+		print("sent")
+
+		self._con.send(bytes('END_TRANSMIT', 'utf8'))
+		# Get Acknowledgement
+		print(self._con.recieve(3))
 
 	def sync(self):
 		c = self._dbcon.cursor()
@@ -101,16 +105,27 @@ class Sync():
 							changetime = datetime.datetime.fromtimestamp(getmtime(join(root,name)))
 							self._con.send(bytes("6 " + str(changetime), "utf8"))
 						else:
+							print ("Error sending new file")
 							# Something went wrong
 							self._con.send(bytes("16", "utf8"))
 							exit()
 
+						print("start sending file")
 						# Send file
-						if (self._con.recieve().decode("utf8") == "0"):
+						ack = self._con.recieve().decode("utf8")
+						#print ("Ack " + ack)
+						if (ack == "0"):
+							print ("ack")
+							print(join(root, name))
 							self._sendFile(join(root, name))
 
+
+						print("enter file in database with fileid: ")
 						fileid = self._con.recieve().decode("utf8")
-						c.execute("insert into filetable values(" + fileid + ", '" + path + "', '" + str(changetime) + "');")
+						print (fileid)
+						c.execute("insert into filetable values (" + fileid + ", '" + path + "', '" + str(changetime) + "');")
+						self._dbcon.commit()
+						print ("send next file")
 
 			# Commit the query, after all files have been checked
 			self._dbcon.commit()

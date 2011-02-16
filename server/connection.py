@@ -61,12 +61,19 @@ class Client(threading.Thread):
 
 	def _recieveFile(self, path):
 		# Recieve the file from the client
-		# Current solution: Hope that no last chunk of a file begins with "8" encoded in utf8
 		writefile = open(path, 'wb')
-		rec = self.con.recv(4096)
-		while (rec != bytes("8", "utf8")):
+		while (1):
+			rec = self.con.recv(1024)
+			if (rec.endswith(b'END_TRANSMIT')):
+				split = rec.partition(b'END_TRANSMIT')
+				print("Rec: " + str(rec))
+				print("Split: " + str(split[0]))
+				writefile.write(split[0])
+				break
 			writefile.write(rec)
-			rec = self.con.recv(4096)
+
+		print("send acknowdegement")
+		self.con.send(b'ACK')
 
 	def _storeFile(self, path):
 		# Check if savedir exists
@@ -81,7 +88,7 @@ class Client(threading.Thread):
 
 		if (not(os.path.exists(os.path.join(self._savedir, pathfile[0])))):
 			try:
-				os.makedirs(os.path.join(self.savedir, pathfile[0]))
+				os.makedirs(os.path.join(self._savedir, pathfile[0]))
 			except error:
 				print ("Something went wrong with the path creation")
 				exit()
@@ -95,6 +102,7 @@ class Client(threading.Thread):
 		rec = self.con.recv(4096).decode("utf8")
 		split = rec.partition(" ")
 		lastchange = None
+		print ("recieve timestamp " + rec)
 		if (split[0] == "6"):
 			# Get the date on which the file was created
 			lastchange = split[2]
@@ -107,9 +115,11 @@ class Client(threading.Thread):
 
 		self._db.executeQuery("delete from hasnewest where fileid = " + str(fileid))
 		self._db.executeQuery("insert into hasnewest(clientid, fileid) values (" + self._clientid + ", " + str(fileid) + ")")
+		print ("send 0, as ack for timestamp")
 		self.con.send(bytes("0", "utf8"))
 		# Filename includes the whole path. (Poor naming anyway)
 		self._storeFile(filename)
+		print ("send fileid: " + str(fileid))
 		self.con.send(bytes(str(fileid), "utf8"))
 
 
@@ -166,6 +176,7 @@ class Client(threading.Thread):
 				elif (split[0] == '4'):			# New file
 					filename = split[2]
 					self._newFile(filename)
+					print ("finished file recieving. Possible to move on to the next one")
 
 				elif (split[0] == '5'):			# Changed file
 					fileid = split[2]

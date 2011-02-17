@@ -39,13 +39,13 @@ class Sync():
 		sendfile = open(path, 'rb')
 		data = sendfile.read()
 
-		print("send")
-		self._con.sendall(data)
-		print("sent")
+		self._con.sendall(bytes("7 " + str(len(data)), "utf8")) # Send the length as a fixed size message
+		self._con.recieve(1)
 
-		self._con.send(bytes('END_TRANSMIT', 'utf8'))
+		self._con.sendall(data)
+
 		# Get Acknowledgement
-		print(self._con.recieve(3))
+		self._con.recieve(1) # Just 1 byte
 
 	def sync(self):
 		c = self._dbcon.cursor()

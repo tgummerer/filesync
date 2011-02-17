@@ -62,18 +62,25 @@ class Client(threading.Thread):
 	def _recieveFile(self, path):
 		# Recieve the file from the client
 		writefile = open(path, 'wb')
-		while (1):
-			rec = self.con.recv(1024)
-			if (rec.endswith(b'END_TRANSMIT')):
-				split = rec.partition(b'END_TRANSMIT')
-				print("Rec: " + str(rec))
-				print("Split: " + str(split[0]))
-				writefile.write(split[0])
-				break
+		rec = self.con.recv(1024)
+		split = rec.decode("utf8").partition(" ")
+		length = None
+		if (split[0] == "7"):
+			length = int(split[2])
+		else:
+			print("Wrong code for sending the length")
+			exit()
+
+		self.con.send(b'A')
+
+		while (length):
+			rec = self.con.recv(min(1024, length))
 			writefile.write(rec)
+			length -= len(rec)
+			print (len(rec))
 
 		print("send acknowdegement")
-		self.con.send(b'ACK')
+		self.con.send(b'A') # single character A to prevent issues with buffering
 
 	def _storeFile(self, path):
 		# Check if savedir exists

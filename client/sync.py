@@ -85,6 +85,8 @@ class Sync():
 								# Something went wrong
 								self._con.send(bytes("16", "utf8"))
 								exit()
+							
+							print("Sending: " + join(root, name))
 
 							if (self._con.recieve().decode("utf8") == "0"):
 								self._sendFile(join(root, name))
@@ -110,22 +112,18 @@ class Sync():
 							self._con.send(bytes("16", "utf8"))
 							exit()
 
-						print("start sending file")
 						# Send file
 						ack = self._con.recieve().decode("utf8")
 						#print ("Ack " + ack)
 						if (ack == "0"):
-							print ("ack")
-							print(join(root, name))
+							print("Sending: " + join(root, name))
 							self._sendFile(join(root, name))
 
 
-						print("enter file in database with fileid: ")
 						fileid = self._con.recieve().decode("utf8")
 						print (fileid)
 						c.execute("insert into filetable values (" + fileid + ", '" + path + "', '" + str(changetime) + "');")
 						self._dbcon.commit()
-						print ("send next file")
 
 			# Commit the query, after all files have been checked
 			self._dbcon.commit()

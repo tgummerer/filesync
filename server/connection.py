@@ -77,9 +77,7 @@ class Client(threading.Thread):
 			rec = self.con.recv(min(1024, length))
 			writefile.write(rec)
 			length -= len(rec)
-			print (len(rec))
 
-		print("send acknowdegement")
 		self.con.send(b'A') # single character A to prevent issues with buffering
 
 	def _storeFile(self, path):
@@ -109,7 +107,6 @@ class Client(threading.Thread):
 		rec = self.con.recv(4096).decode("utf8")
 		split = rec.partition(" ")
 		lastchange = None
-		print ("recieve timestamp " + rec)
 		if (split[0] == "6"):
 			# Get the date on which the file was created
 			lastchange = split[2]
@@ -122,11 +119,9 @@ class Client(threading.Thread):
 
 		self._db.executeQuery("delete from hasnewest where fileid = " + str(fileid))
 		self._db.executeQuery("insert into hasnewest(clientid, fileid) values (" + self._clientid + ", " + str(fileid) + ")")
-		print ("send 0, as ack for timestamp")
 		self.con.send(bytes("0", "utf8"))
 		# Filename includes the whole path. (Poor naming anyway)
 		self._storeFile(filename)
-		print ("send fileid: " + str(fileid))
 		self.con.send(bytes(str(fileid), "utf8"))
 
 
@@ -143,13 +138,13 @@ class Client(threading.Thread):
 			exit()
 
 
-		print (fileid)
 		self._db.executeQuery("update filetable set lastchange = '" + lastchange + "' where fileid = " + fileid)
 		self._db.executeQuery("delete from hasnewest where fileid = " + str(fileid))
 		self._db.executeQuery("insert into hasnewest(clientid, fileid) values (" + self._clientid + ", " + str(fileid) + ")")
-		self.con.send(bytes("0", "uft8"))
-		path = self._db.executeQuery("select path from filetable where fileid = " + fileid)
-		self._storeFile(path.first()[0])
+		# ACK Timestamp
+		self.con.send(bytes("0", "utf8"))
+		path = self._db.executeSelect("select path from filetable where fileid = " + fileid)
+		self._storeFile(path.first())
 		self.con.send(bytes("0", "utf8"))
 
 

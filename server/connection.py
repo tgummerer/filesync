@@ -153,6 +153,41 @@ class Client(threading.Thread):
 		index = self._db.executeSelect("insert into client (userid) values (" + str(self._userid) + ") returning clientid")
 		self.con.send(bytes(str(index.first()), "utf8"))
 
+	def _sendFiles(self):
+		# TODO Update lastchange on server, but not so important, since it is not used anywhere
+		# Find all files, that the connected client doesn't have.
+		for fileid, path in self._db.executeSelect("""select filetable.fileid, path 
+										  from filetable natural join usertable natural join client natural join hasnewest
+										  where userid = """ + str(self._userid) + """
+										  		and clientid != """ + str(self._clientid)):
+			# Send filename
+			self.con.send(bytes(path, "utf8"))
+			# Recieve Acknowledgement
+			self.con.recv(1)
+
+			print("Sent filename")
+
+			# Send fileid
+			self.con.send(bytes(str(fileid), "utf8"))
+			self.con.recv(1)
+
+			print("Sent fileid")
+
+			sendfile = open(os.path.join(self._savedir, path), 'rb')
+			data = sendfile.read()
+			# Send filesize
+			self.con.send(bytes("7 " + str(len(data)), "utf8"))
+			self.con.recv(1)
+			print("Sent length")
+
+			self.con.sendall(data)
+			self.con.recv(1)
+			# Add client to hasnewest
+			self._db.executeQuery("insert into hasnewest (fileid, clientid) values (" + str(fileid) + ", " + str(self._clientid) + ")")
+
+		self.con.send(bytes("//", "utf8"))
+
+
 	def run(self):
 		while True:
 			try:
@@ -183,6 +218,9 @@ class Client(threading.Thread):
 				elif (split[0] == '5'):			# Changed file
 					fileid = split[2]
 					self._updateFile(fileid)
+
+				elif (split[0] == '9'):			# Request all changed files
+					self._sendFiles()
 
 				elif (split[0] == '16'):		# Exit
 					break

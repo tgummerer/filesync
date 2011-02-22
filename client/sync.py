@@ -47,7 +47,71 @@ class Sync():
 		# Get Acknowledgement
 		self._con.recieve(1) # Just 1 byte
 
+	def _getFiles(self):
+		self._con.send(bytes('9', 'utf8'))	
+		c = self._dbcon.cursor()
+		while (True):
+			filename = self._con.recieve().decode("utf8")
+			if (filename == '//'): # No file can be named // therefore used as end signal
+				break
+
+			self._con.send(bytes('0', 'utf8'))
+
+			# Create directory path for storing the file
+			pathfile = os.path.split(filename)
+			if (not(os.path.exists(os.path.join(self._syncdir, pathfile[0])))):
+				try:
+					os.makedirs(os.path.join(self._syncdir, pathfile[0]))
+				except error:
+					print ("Something went wrong with the path creation")
+					exit()
+
+			fileid = self._con.recieve().decode("utf8")
+			self._con.send(bytes('0', 'utf8'))
+
+			print(fileid)
+			print(self._syncdir)
+			print(filename)
+			writefile = open(os.path.join(self._syncdir, filename), 'wb')
+
+			rec = self._con.recieve()
+			split = rec.decode("utf8").partition(" ")
+			length = None
+			if (split[0] == "7"):
+				length = int(split[2])
+			else:
+				print ("Wrong code for sending the length")
+				exit()
+
+			print("Length: " + str(length))
+
+			self._con.send(bytes('0', 'utf8'))
+			while (length):
+				rec = self._con.recieve(min(1024, length))
+				writefile.write(rec)
+				length -= len(rec)
+
+			# Update last change
+
+			print ("Got " + filename)
+			changetime = datetime.datetime.fromtimestamp(getmtime(os.path.join(self._syncdir, filename)))
+
+			c.execute("select fileid from filetable where path = '" + filename + "'")
+			row = c.fetchone()
+
+			if (row is None):
+				c.execute("insert into filetable (fileid, path, lastchange) values (" + fileid + ", '" + filename + "', '" + str(changetime) + "')")
+
+			else:
+				c.execute("update filetable set lastchange = '" + str(changetime) + "' where fileid = " + str(row[0]))
+			self._con.send(bytes('0', 'utf8'))
+
+		self._dbcon.commit()
+		c.close()
+
+
 	def sync(self):
+		self._getFiles()
 		c = self._dbcon.cursor()
 		# TODO Check if some file hase changed. Check by checking st_atime for syncpath
 		c.execute ("select max(lastchange) from filetable")

@@ -18,6 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Filesync.  If not, see <http://www.gnu.org/licenses/>. 
 
+import hashlib
+import getpass
+
 # TODO Move methods below to another class or at least file
 def getProperty(configFile, section, prop):
 	try:

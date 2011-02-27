@@ -110,14 +110,12 @@ clientid = getProperty(configFile, 'syncdata', 'clientid')
 con.send(bytes("3 " + clientid, "utf8"))
 
 import sync
+import time
 syncdir = getProperty(configFile, 'config', 'syncpath')
 sy = sync.Sync(syncdir, con)
 while True:
-	text = input("Type 'sync' to synchronize the sync folder, 'exit' to exit: ")
-	if (text == 'sync'):
-		sy.sync()
-	elif (text == 'exit'):
-		break
+	sy.sync()
+	time.sleep(5) # Wait 5 seconds until the next try of syncing
 
 # Send exit code
 con.send(bytes("16", "utf8"))

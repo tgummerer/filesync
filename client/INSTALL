@@ -1,0 +1,5 @@
+1) cd to the helpers directory
+2) Create the config file by running: python makeconfig.py
+3) Create the sqlite database by running: python makesqlitedb.py
+4) cd .. to the client directory
+5) Start the client with python client.py

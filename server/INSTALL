@@ -1,0 +1,7 @@
+1) Create a PostgreSQL database, and create the tables with the script sql/create.sql
+2) cd to the helpers directory
+3) Create the config file by running: python makeconfig.py
+4) Create a new user by running: python newuser.py
+5) cd .. to the server directory
+6) Start the client with python server.py
+7) New users can be added while the server runs with the newuser script

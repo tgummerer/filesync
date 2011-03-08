@@ -156,7 +156,6 @@ class Client(threading.Thread):
 	def _sendFiles(self):
 		# TODO Update lastchange on server, but not so important, since it is not used anywhere
 		# Find all files, that the connected client doesn't have.
-		print (self._clientid)
 		for fileid, path in self._db.executeSelect("""
 			select filetable.fileid, path
 			from filetable natural join usertable natural join client natural join hasnewest
@@ -177,14 +176,12 @@ class Client(threading.Thread):
 			self.con.send(bytes(str(fileid), "utf8"))
 			self.con.recv(1)
 
-			print("Sent fileid")
 
 			sendfile = open(os.path.join(self._savedir, path), 'rb')
 			data = sendfile.read()
 			# Send filesize
 			self.con.send(bytes("7 " + str(len(data)), "utf8"))
 			self.con.recv(1)
-			print("Sent length")
 
 			self.con.sendall(data)
 			self.con.recv(1)
@@ -219,7 +216,6 @@ class Client(threading.Thread):
 				elif (split[0] == '4'):			# New file
 					filename = split[2]
 					self._newFile(filename)
-					print ("finished file recieving. Possible to move on to the next one")
 
 				elif (split[0] == '5'):			# Changed file
 					fileid = split[2]

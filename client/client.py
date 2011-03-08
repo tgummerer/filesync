@@ -113,9 +113,17 @@ import sync
 import time
 syncdir = getProperty(configFile, 'config', 'syncpath')
 sy = sync.Sync(syncdir, con)
+i = 0
 while True:
-	sy.sync()
+
+	if (i == 11):
+		# Force checking if there is something to sync every minute. Sometimes the check for the time is not enough.
+		i = 0
+		sy.sync(True)
+	else:
+		sy.sync()
 	time.sleep(5) # Wait 5 seconds until the next try of syncing
+	i += 1
 
 # Send exit code
 con.send(bytes("16", "utf8"))

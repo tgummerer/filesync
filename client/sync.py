@@ -107,7 +107,7 @@ class Sync():
 		c.close()
 
 
-	def sync(self):
+	def sync(self, force = False):
 		self._getFiles()
 		c = self._dbcon.cursor()
 		c.execute ("select max(lastchange) from filetable")
@@ -120,7 +120,7 @@ class Sync():
 		# Only do something if a file has changed
 		time_format = "%Y-%m-%d %H:%M:%S"
 		# TODO Checking st_atime for syncpath doesn't work in certain situations. Search for a better solution
-		if (time.mktime(time.strptime(stime, time_format)) < getatime(self._syncdir)):
+		if (time.mktime(time.strptime(stime, time_format)) < getatime(self._syncdir) or force):
 			c.execute ("select * from filetable")
 			i = None
 			rows = {}

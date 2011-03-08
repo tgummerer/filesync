@@ -156,16 +156,22 @@ class Client(threading.Thread):
 	def _sendFiles(self):
 		# TODO Update lastchange on server, but not so important, since it is not used anywhere
 		# Find all files, that the connected client doesn't have.
-		for fileid, path in self._db.executeSelect("""select filetable.fileid, path 
-										  from filetable natural join usertable natural join client natural join hasnewest
-										  where userid = """ + str(self._userid) + """
-										  		and clientid != """ + str(self._clientid)):
+		print (self._clientid)
+		for fileid, path in self._db.executeSelect("""
+			select filetable.fileid, path
+			from filetable natural join usertable natural join client natural join hasnewest
+			where userid = """ + str(self._userid) + """
+			and clientid != """ + str(self._clientid) + """
+			except
+			select filetable.fileid, path
+			from filetable natural join usertable natural join client natural join hasnewest
+			where userid = """ + str(self._userid) + """
+			and clientid = """ + str(self._clientid)): # QUERY IS PLAIN WRONG FUCK YOU TOMMY
+
 			# Send filename
 			self.con.send(bytes(path, "utf8"))
 			# Recieve Acknowledgement
 			self.con.recv(1)
-
-			print("Sent filename")
 
 			# Send fileid
 			self.con.send(bytes(str(fileid), "utf8"))

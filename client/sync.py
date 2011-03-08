@@ -69,9 +69,6 @@ class Sync():
 			fileid = self._con.recieve().decode("utf8")
 			self._con.send(bytes('0', 'utf8'))
 
-			print(fileid)
-			print(self._syncdir)
-			print(filename)
 			writefile = open(os.path.join(self._syncdir, filename), 'wb')
 
 			rec = self._con.recieve()
@@ -83,7 +80,6 @@ class Sync():
 				print ("Wrong code for sending the length")
 				exit()
 
-			print("Length: " + str(length))
 
 			self._con.send(bytes('0', 'utf8'))
 			while (length):
@@ -92,8 +88,7 @@ class Sync():
 				length -= len(rec)
 
 			# Update last change
-
-			print ("Got " + filename)
+			print ("Updated: " + filename)
 			changetime = datetime.datetime.fromtimestamp(getmtime(os.path.join(self._syncdir, filename)))
 
 			c.execute("select fileid from filetable where path = '" + filename + "'")
@@ -159,8 +154,6 @@ class Sync():
 							self._con.recieve()
 							c.execute("update filetable set lastchange = '" + str(changetime) + "' where fileid = " + str(rows[path][0]))
 
-						else:				# Leave file alone
-							pass
 					else:					# File does not exist, send it to the server
 
 						self._con.send(bytes("4 " + path, "utf8"))
@@ -178,14 +171,12 @@ class Sync():
 
 						# Send file
 						ack = self._con.recieve().decode("utf8")
-						#print ("Ack " + ack)
 						if (ack == "0"):
 							print("Sending: " + join(root, name))
 							self._sendFile(join(root, name))
 
 
 						fileid = self._con.recieve().decode("utf8")
-						print (fileid)
 						c.execute("insert into filetable values (" + fileid + ", '" + path + "', '" + str(changetime) + "');")
 						self._dbcon.commit()
 

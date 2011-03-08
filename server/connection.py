@@ -114,16 +114,16 @@ class Client(threading.Thread):
 			# Something went wrong. Kick the client out.
 			exit()
 
+		self.con.send(bytes("0", "utf8"))
+		# Filename includes the whole path. (Poor naming anyway)
+		self._storeFile(filename)
 		index = self._db.executeSelect("insert into filetable (userid, path, lastchange) values (" + str(self._userid) + ", '" + filename + "', '" + lastchange + "') RETURNING fileid")
 		fileid = index.first()
 
 		self._db.executeQuery("delete from hasnewest where fileid = " + str(fileid))
 		self._db.executeQuery("insert into hasnewest(clientid, fileid) values (" + self._clientid + ", " + str(fileid) + ")")
-		self.con.send(bytes("0", "utf8"))
-		# Filename includes the whole path. (Poor naming anyway)
-		self._storeFile(filename)
 		self.con.send(bytes(str(fileid), "utf8"))
-
+		
 
 	def _updateFile(self, fileid):
 		self.con.send(bytes("0", "utf8"))
@@ -140,12 +140,12 @@ class Client(threading.Thread):
 
 		self._db.executeQuery("update filetable set lastchange = '" + lastchange + "' where fileid = " + fileid)
 		self._db.executeQuery("delete from hasnewest where fileid = " + str(fileid))
-		self._db.executeQuery("insert into hasnewest(clientid, fileid) values (" + self._clientid + ", " + str(fileid) + ")")
 		# ACK Timestamp
 		self.con.send(bytes("0", "utf8"))
 		path = self._db.executeSelect("select path from filetable where fileid = " + fileid)
 		self._storeFile(path.first())
 		self.con.send(bytes("0", "utf8"))
+		self._db.executeQuery("insert into hasnewest(clientid, fileid) values (" + self._clientid + ", " + str(fileid) + ")")
 
 
 
@@ -224,7 +224,7 @@ class Client(threading.Thread):
 				elif (split[0] == '9'):			# Request all changed files
 					self._sendFiles()
 
-				elif (split[0] == '16'):		# Exit
+				else:							# Exit signal or a wrong signal send. Close the thread, so that it doesn't consume some extra cpu.
 					break
 
 			except socket.error:

@@ -66,6 +66,7 @@ class Sync():
 					print ("Something went wrong with the path creation")
 					exit()
 
+			print ("Update: " + filename)
 			fileid = self._con.recieve().decode("utf8")
 			self._con.send(bytes('0', 'utf8'))
 
@@ -88,7 +89,8 @@ class Sync():
 				length -= len(rec)
 
 			# Update last change
-			print ("Updated: " + filename)
+			#print ("Updated: " + filename)
+			print ("Finished update")
 			changetime = datetime.datetime.fromtimestamp(getmtime(os.path.join(self._syncdir, filename)))
 
 			c.execute("select fileid from filetable where path = '" + filename + "'")
@@ -150,6 +152,8 @@ class Sync():
 							if (self._con.recieve().decode("utf8") == "0"):
 								self._sendFile(join(root, name))
 
+							print("Finished sending file")
+
 							# Just wait for the message, nothing else
 							self._con.recieve()
 							c.execute("update filetable set lastchange = '" + str(changetime) + "' where fileid = " + str(rows[path][0]))
@@ -174,6 +178,7 @@ class Sync():
 						if (ack == "0"):
 							print("Sending: " + join(root, name))
 							self._sendFile(join(root, name))
+							print("Finished sending file")
 
 
 						fileid = self._con.recieve().decode("utf8")

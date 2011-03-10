@@ -170,21 +170,34 @@ class Client(threading.Thread):
 			# Send filename
 			self.con.send(bytes(path, "utf8"))
 			# Recieve Acknowledgement
-			self.con.recv(1)
+			if (self.con.recv(1).decode("utf8") != '0'):
+				print("Wrong acknowledgement. Exiting thread")
+				self.con.close()
+				exit()
 
 			# Send fileid
 			self.con.send(bytes(str(fileid), "utf8"))
-			self.con.recv(1)
+			if (self.con.recv(1).decode("utf8") != '0'):
+				print("Wrong acknowledgement. Exiting thread")
+				self.con.close()
+				exit()
 
 
 			sendfile = open(os.path.join(self._savedir, path), 'rb')
 			data = sendfile.read()
 			# Send filesize
 			self.con.send(bytes("7 " + str(len(data)), "utf8"))
-			self.con.recv(1)
+			if (self.con.recv(1).decode("utf8") != '0'):
+				print("Wrong acknowledgement. Exiting thread")
+				self.con.close()
+				exit()
 
 			self.con.sendall(data)
-			self.con.recv(1)
+			if (self.con.recv(1).decode("utf8") != '0'):
+				print("Wrong acknowledgement. Exiting thread")
+				self.con.close()
+				exit()
+
 			# Add client to hasnewest
 			self._db.executeQuery("insert into hasnewest (fileid, clientid) values (" + str(fileid) + ", " + str(self._clientid) + ")")
 

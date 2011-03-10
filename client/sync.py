@@ -39,13 +39,20 @@ class Sync():
 		sendfile = open(path, 'rb')
 		data = sendfile.read()
 
-		self._con.sendall(bytes("7 " + str(len(data)), "utf8")) # Send the length as a fixed size message
-		self._con.recieve(1)
+		self._con.sendall(bytes("7 " + str(len(data)), "utf8"))
+		if (self._con.recieve(1).decode("utf8") != 'A'):
+			print ("Wrong acknowlege. Exiting thread.")
+			self._con.close()
+			exit()
 
 		self._con.sendall(data)
 
 		# Get Acknowledgement
-		self._con.recieve(1) # Just 1 byte
+		if (self._con.recieve(1).decode("utf8") != 'A'):
+			print ("Wrong acknowlege. Exiting thread.")
+			self._con.close()
+			exit()
+
 
 	def _getFiles(self):
 		self._con.send(bytes('9', 'utf8'))	
@@ -155,7 +162,11 @@ class Sync():
 							print("Finished sending file")
 
 							# Just wait for the message, nothing else
-							self._con.recieve()
+							if(self._con.recieve().decode("utf8") != "0"):
+								print ("No acknowlegement recieved. Exiting Thread")
+								self._con.close()
+								exit()
+
 							c.execute("update filetable set lastchange = '" + str(changetime) + "' where fileid = " + str(rows[path][0]))
 
 					else:					# File does not exist, send it to the server
